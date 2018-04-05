@@ -1,0 +1,45 @@
+FROM nvidia/cuda:8.0-cudnn5-devel
+
+# Then reload everything
+RUN apt update -y
+RUN apt upgrade -y
+
+# Pre-requisites
+RUN apt install -y vim git cmake \
+libprotobuf-dev protobuf-compiler libleveldb-dev libsnappy-dev \ 
+libhdf5-serial-dev  libboost-all-dev \
+libopenblas-dev libatlas-base-dev \
+libgflags-dev libgoogle-glog-dev liblmdb-dev \
+libtbb2 libtbb-dev libhdf5-dev
+
+# Pre-install OpenCV3 for image handling
+RUN git clone https://github.com/opencv/opencv.git
+WORKDIR opencv
+RUN mkdir build
+WORKDIR build
+RUN cmake -DWITH_TBB=ON -DCUDA_ARCH_BIN=6.1 -DCUDA_ARCH_PTX=6.1 -DENABLE_IMPL_COLLECTION=ON -DTBB_ENV_INCLUDE=/usr/include -DTBB_ENV_LIB=/usr/lib/x86_64-linux-gnu/libtbb.so -DTBB_VER_FILE=/usr/include/tbb/tbb_stddef.h ..
+RUN make -j $(nproc)
+RUN make install
+
+# Install a valid caffe installation
+WORKDIR /home/Github
+RUN git clone https://github.com/StevenPuttemans/caffe-segnet-cudnn5/
+WORKDIR caffe-segnet-cudnn5
+RUN ln -s /usr/lib/x86_64-linux-gnu/libhdf5_serial.so /usr/lib/x86_64-linux-gnu/libhdf5.so
+RUN ln -s /usr/lib/x86_64-linux-gnu/libhdf5_serial_hl.so /usr/lib/x86_64-linux-gnu/libhdf5_hl.so
+RUN make -j $(nproc) all
+
+# Install the SegNet tutorial
+RUN git clone https://github.com/alexgkendall/SegNet-Tutorial
+RUN ln -s /home/Github/SegNet-Tutorial/ /SegNet
+WORKDIR SegNet-Tutorial
+
+# Create some folders that you will need for training and testing
+RUN mkdir Models/Training
+RUN mkdir Models/Inference
+
+# Dependencies for Python scripts
+RUN apt install -y python-pip
+RUN pip install --upgrade pip
+RUN pip install scikit-image
+RUN pip install protobuf

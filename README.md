@@ -6,7 +6,7 @@ Comments or questions, address the [issues tab](https://github.com/StevenPuttema
 
 ## Docker files
 
-### Docker_basic
+### Dockerfile_basic
 
 My basic starting point for computer vision programming
  * Ubuntu 16.04 x64 OS
@@ -19,8 +19,18 @@ My basic starting point for computer vision programming
 
 If you build the docker from scratch, it will always pull the latest master branch of OpenCV.
 
-### Docker_darknet
+### Dockerfile_darknet
 
-Starts from the `Docker_basic`-configuration, then applies the following extra's
+Starts from the `Dockerfile_basic`-configuration, then applies the following extra's
  * Due to conflicts in OpenCV master branch, fix on release `3.4.0`
  * Download [EAVISE specific darknet repo](https://gitlab.com/EAVISE/darknet) and configures it to be build with CUDA and cuDNN support
+
+### Dockerfile_segnet
+
+A clean installation of the SegNet framework with
+ * Ubuntu 16.04 x64 OS
+ * CUDA v8.0 with cuDNN v5.0
+ * Caffe with cuDNN v5.0 support from https://github.com/StevenPuttemans/caffe-segnet-cudnn5/
+
+On top of that the SegNet repository is pre-installed and all pre-requisites for doing training, inference and post-analysis is already installed.
+
