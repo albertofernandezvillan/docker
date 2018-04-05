@@ -1,0 +1,36 @@
+FROM spu_basic:opencv3.4_cuda8.0_cudnn7.1
+
+RUN apt update -y
+Run apt upgrade -y
+
+# OpenCV3.4.1 has an issue with C and C++ compiler conflicts
+# It seems it can be solved by sticking to 3.4.0, which is more than enough for Darknet
+WORKDIR /home/Github/opencv
+RUN git checkout 3.4.0
+RUN mkdir build_3.4.0
+WORKDIR build_3.4.0
+RUN cmake -DWITH_TBB=ON -DWITH_CUDA=OFF -DWITH_OPENCL=OFF -DENABLE_IMPL_COLLECTION=ON -DTBB_ENV_INCLUDE=/usr/include -DTBB_ENV_LIB=/usr/lib/x86_64-linux-gnu/libtbb.so -DTBB_VER_FILE=/usr/include/tbb/tbb_stddef.h ..
+RUN make -j $(nproc)
+
+# Now first clear the complete OpenCV system installation
+# Then install this newly compiled version
+WORKDIR /usr/local/
+RUN rm -r bin/opencv*
+RUN rm -r lib/libopencv*
+RUN rm -r include/opencv*
+RUN rm -r lib/pkgconfig/opencv*
+WORKDIR /home/Github/opencv/build_3.4.0
+RUN make install
+
+# Create the Darknet installation
+WORKDIR /home/Github
+RUN git clone https://gitlab.com/EAVISE/darknet.git
+WORKDIR darknet
+RUN git checkout darknet_docker_spu
+RUN make -j $(nproc)
+
+# Go back to the root
+WORKDIR /
+
+CMD /bin/bash
+
