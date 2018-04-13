@@ -1,0 +1,33 @@
+FROM spu_basic:opencv3.4_cuda8.0_cudnn7.1
+
+# Then reload everything
+RUN apt update -y
+RUN apt upgrade -y
+
+# Pre-requisites
+RUN apt install -y libprotobuf-dev libleveldb-dev libsnappy-dev libopencv-dev \
+libhdf5-serial-dev protobuf-compiler libgflags-dev libgoogle-glog-dev liblmdb-dev \
+libopenblas-dev libhdf5-dev libatlas3-base libatlas-base-dev
+
+RUN apt install -y --no-install-recommends libboost-all-dev
+
+# Fix some symbolical links
+RUN ln -s /usr/lib/x86_64-linux-gnu/libhdf5_serial.so /usr/lib/x86_64-linux-gnu/libhdf5.so
+RUN ln -s /usr/lib/x86_64-linux-gnu/libhdf5_serial_hl.so /usr/lib/x86_64-linux-gnu/libhdf5_hl.so
+
+# Install latest caffe
+WORKDIR /home/Github
+RUN git clone https://github.com/StevenPuttemans/caffe
+WORKDIR /home/Github/caffe
+RUN make -j $(nproc) all
+
+# For this to properly work, we need a static matlab installation...
+
+# Clone the repository of pixelnet
+WORKDIR /home/Github
+RUN git clone https://github.com/aayushbansal/PixelNet
+
+# Set back the work directory
+WORKDIR /
+
+CMD /bin/bash
