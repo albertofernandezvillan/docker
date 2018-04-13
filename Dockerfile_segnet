@@ -15,6 +15,7 @@ libtbb2 libtbb-dev libhdf5-dev
 # Pre-install OpenCV3 for image handling
 WORKDIR /home/Github/
 RUN git clone https://github.com/opencv/opencv.git
+RUN git checkout 3.4
 WORKDIR /home/Github/opencv
 RUN mkdir build
 WORKDIR /home/Github/opencv/build
